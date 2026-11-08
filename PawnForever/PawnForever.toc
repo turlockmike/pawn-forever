@@ -1,0 +1,15 @@
+## Interface: 16001
+## Title: Pawn Forever
+## Notes: Pawn add-on for WoW Forever: reads the Forever tooltip lines Pawn misses (mana per 5, healing, zone bonuses), fixes hover lag, and adds Pawn Forever weights for every spec.
+## Author: turlockmike
+## Version: 1.0.0
+## Dependencies: Pawn
+## SavedVariables: PawnForeverDB
+## X-Website: https://github.com/turlockmike/pawn-forever
+## X-License: MIT
+
+Parsing.lua
+CacheFix.lua
+Weights.lua
+Scales.lua
+Commands.lua

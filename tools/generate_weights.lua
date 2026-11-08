@@ -1,0 +1,114 @@
+-- Builds PawnForever/Weights.lua.
+-- Usage (from the repo root): luajit tools/generate_weights.lua "<path to GearQuestForever/_generated/ScoringWeights.generated.lua>"
+--
+-- Starting point: the per-spec WoW Forever weight tables that ship with GearQuest Forever (by Henrik8210),
+-- which score per point of rating. Pawn on Forever reads crit/hit/dodge/parry as percentages, so those are
+-- converted with the rating-per-1% values printed on real Forever tooltips (crit 14, hit 10, dodge 12, parry 15).
+-- Balance and Restoration druid are hand-tuned overrides (see README).
+--
+-- Each spec gets two sets of values: "leveling" (used below level 60) and "max" (level 60).
+
+local src = assert(arg[1], "pass the path to GearQuestForever's ScoringWeights.generated.lua")
+local GQ = {}
+assert(loadfile(src))(nil, GQ)
+
+local PER_PERCENT = { crit = 14, hit = 10, haste = 10, dodge = 12, parry = 15, blockRating = 5 }
+local MAP = {
+  str = "Strength", agi = "Agility", sta = "Stamina", int = "Intellect", spi = "Spirit",
+  ap = "Ap", rap = "Rap", feralAp = "FeralAp",
+  crit = "CritRating", hit = "HitRating", haste = "HasteRating",
+  defense = "DefenseRating", dodge = "DodgeRating", parry = "ParryRating",
+  blockRating = "BlockRating", blockValue = "BlockValue",
+  armor = "Armor", health = "Health", hp5 = "Hp5", mana = "Mana", mp5 = "Mp5",
+  sp = "SpellDamage", heal = "Healing",
+  spFire = "FireSpellDamage", spFrost = "FrostSpellDamage", spArcane = "ArcaneSpellDamage",
+  spShadow = "ShadowSpellDamage", spNature = "NatureSpellDamage", spHoly = "HolySpellDamage",
+  -- sp_from_heal: GearQuest's model for the damage part of "healing X and damage Y" lines.
+  -- Pawn already reads that part as SpellDamage, so it is not mapped separately.
+}
+local RESISTS = { "FireResist", "FrostResist", "ArcaneResist", "ShadowResist", "NatureResist" }
+
+-- class file, Pawn class ID, { GearQuest spec key, Pawn spec ID or nil for an extra Forever spec, English label }
+local CLASSES = {
+  { "WARRIOR", 1, { { "arms", 1 }, { "fury", 2 }, { "protection", 3 } } },
+  { "PALADIN", 2, { { "holy", 1 }, { "protection", 2 }, { "retribution", 3 }, { "shockadin", nil, "Shockadin" } } },
+  { "HUNTER", 3, { { "beast_mastery", 1 }, { "marksmanship", 2 }, { "survival", 3 } } },
+  { "ROGUE", 4, { { "assassination", 1 }, { "combat", 2 }, { "subtlety", 3 } } },
+  { "PRIEST", 5, { { "discipline", 1 }, { "holy", 2 }, { "shadow", 3 } } },
+  { "SHAMAN", 7, { { "elemental", 1 }, { "enhancement", 2 }, { "restoration", 3 }, { "enhancement_tank", nil, "Enhancement Tank" } } },
+  { "MAGE", 8, { { "arcane", 1 }, { "fire", 2 }, { "frost", 3 },
+      { "battlemage_arcane", nil, "Battle Mage (Arcane)" }, { "battlemage_fire", nil, "Battle Mage (Fire)" }, { "battlemage_frost", nil, "Battle Mage (Frost)" } } },
+  { "WARLOCK", 9, { { "affliction", 1 }, { "demonology", 2 }, { "destruction", 3 } } },
+  { "DRUID", 11, { { "balance", 1 }, { "feral", 2 }, { "bear", 3 }, { "restoration", 4 } } },
+}
+
+-- Hand-tuned druid caster scales (Pawn units: crit/hit/haste per 1%).
+local OVERRIDES = {
+  DRUID = {
+    balance = {
+      leveling = { SpellDamage = 1, NatureSpellDamage = 0.55, ArcaneSpellDamage = 0.5, Intellect = 0.55, Spirit = 0.3, Mp5 = 0.9,
+        CritRating = 8, HitRating = 10, HasteRating = 4, SpellPenetration = 0.2, Stamina = 0.15, Agility = 0.05, Armor = 0.003, Hp5 = 0.3 },
+      max = { SpellDamage = 1, NatureSpellDamage = 0.55, ArcaneSpellDamage = 0.5, Intellect = 0.45, Spirit = 0.1, Mp5 = 0.6,
+        CritRating = 8, HitRating = 10, HasteRating = 4, SpellPenetration = 0.2, Stamina = 0.1, Agility = 0.05, Armor = 0.003, Hp5 = 0.1 },
+    },
+    restoration = {
+      leveling = { Healing = 1, Intellect = 0.6, Spirit = 0.6, Mp5 = 2, CritRating = 4, HasteRating = 3, Stamina = 0.1, Agility = 0.03, Armor = 0.003, Hp5 = 0.3 },
+      max = { Healing = 1, Intellect = 0.5, Spirit = 0.5, Mp5 = 2.5, CritRating = 4, HasteRating = 3, Stamina = 0.1, Agility = 0.03, Armor = 0.003, Hp5 = 0.1 },
+    },
+  },
+}
+
+local function round(x) return math.floor(x * 10000 + 0.5) / 10000 end
+
+local function convert(row, leveling)
+  local out = {}
+  for key, raw in pairs(row.weights) do
+    local mult = 1
+    if leveling and GQ.ScoringLeveling[key] and key ~= "untilLevel" then mult = GQ.ScoringLeveling[key] end
+    local v = raw * mult * (PER_PERCENT[key] or 1)
+    if key == "resist" then
+      for _, r in ipairs(RESISTS) do out[r] = round(v) end
+      out.AllResist = round(v * 5)
+    elseif MAP[key] then
+      out[MAP[key]] = round(v)
+    end
+  end
+  if row.dpsWeight then out.MeleeDps = row.dpsWeight end
+  if row.dpsWeightRanged then out.RangedDps = row.dpsWeightRanged end
+  return out
+end
+
+local function serialize(t)
+  local keys = {}
+  for k in pairs(t) do keys[#keys + 1] = k end
+  table.sort(keys)
+  local parts = {}
+  for _, k in ipairs(keys) do if t[k] ~= 0 then parts[#parts + 1] = k .. " = " .. t[k] end end
+  return "{ " .. table.concat(parts, ", ") .. " }"
+end
+
+local lines = {
+  "-- GENERATED by tools/generate_weights.lua; edit that file, not this one.",
+  "-- Pawn units: CritRating / HitRating / HasteRating / DodgeRating / ParryRating / BlockRating are per 1%.",
+  "local _, PF = ...",
+  "PF.Weights = {",
+}
+for _, c in ipairs(CLASSES) do
+  local cls, classID, specs = c[1], c[2], c[3]
+  for _, s in ipairs(specs) do
+    local key, specID, label = s[1], s[2], s[3]
+    local row = assert(GQ.ScoringWeights[cls][key], cls .. "." .. key .. " missing from GearQuest data")
+    local o = OVERRIDES[cls] and OVERRIDES[cls][key]
+    local lev = o and o.leveling or convert(row, true)
+    local max = o and o.max or convert(row, false)
+    lines[#lines + 1] = ("  { class = %q, classID = %d, key = %q, specID = %s, label = %s,"):format(
+      cls, classID, key, specID and tostring(specID) or "nil", label and ("%q"):format(label) or "nil")
+    lines[#lines + 1] = "    leveling = " .. serialize(lev) .. ","
+    lines[#lines + 1] = "    max = " .. serialize(max) .. " },"
+  end
+end
+lines[#lines + 1] = "}"
+local f = assert(io.open("PawnForever/Weights.lua", "wb"))
+f:write(table.concat(lines, "\n") .. "\n")
+f:close()
+print("wrote PawnForever/Weights.lua")

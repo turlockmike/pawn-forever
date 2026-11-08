@@ -52,6 +52,12 @@ To change weights, edit `tools/generate_weights.lua` and run it from the repo ro
 - `tools/fixtures/globals_enUS.lua` holds the English game strings the patterns are built from, dumped from the Forever client.
 - `tools/wowcmd.ps1 -Cmd "/reload" -Shot shot.png` types a slash command into the running WoW window and screenshots it (Windows).
 
+## Releasing
+1. Add a `## x.y.z (date)` section at the top of `CHANGELOG.md` and commit.
+2. Tag and push: `git tag vx.y.z && git push origin vx.y.z`.
+
+`.github/workflows/release.yml` then builds `PawnForever-vx.y.z.zip`, which contains the `PawnForever` folder with the version stamped into the .toc. It creates a GitHub release using that changelog section. It also uploads to CurseForge once the repo has the `CF_API_TOKEN` secret and the `CF_PROJECT_ID` and `CF_GAME_VERSION_IDS` variables. The workflow file explains where to find each one.
+
 ## Reported upstream
 - Pawn's parsing gaps above and the hover lag (reported to Vger).
 - Pawn's stock Forever Fire mage scale has `FireSpellDamage=95` (should be about 0.95), so any fire-damage item looks like a huge upgrade on that scale.

@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.2 (unreleased)
+## 1.0.2 (2026-11-08)
 - Scales are named "<spec> Forever" (Balance Forever, Resto Forever, Combat Forever, ...) so they're easy to tell apart from Pawn's stock scales on tooltips.
 
 ## 1.0.1 (2026-11-08)

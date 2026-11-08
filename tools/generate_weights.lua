@@ -58,6 +58,16 @@ local OVERRIDES = {
   },
 }
 
+-- Scale names shown in Pawn: "<label> Forever". Pawn's own spec names are retail ones (Outlaw, Guardian), so not used.
+local LABELS = {
+  beast_mastery = "Beast Mastery", restoration = "Resto", bear = "Bear", feral = "Feral Cat",
+  battlemage_arcane = "Battle Mage Arcane", battlemage_fire = "Battle Mage Fire", battlemage_frost = "Battle Mage Frost",
+  enhancement_tank = "Enhancement Tank",
+}
+local function Label(key)
+  return LABELS[key] or (key:gsub("_", " "):gsub("^%l", string.upper))
+end
+
 local function round(x) return math.floor(x * 10000 + 0.5) / 10000 end
 
 local function convert(row, leveling)
@@ -96,13 +106,13 @@ local lines = {
 for _, c in ipairs(CLASSES) do
   local cls, classID, specs = c[1], c[2], c[3]
   for _, s in ipairs(specs) do
-    local key, specID, label = s[1], s[2], s[3]
+    local key, specID = s[1], s[2]
     local row = assert(GQ.ScoringWeights[cls][key], cls .. "." .. key .. " missing from GearQuest data")
     local o = OVERRIDES[cls] and OVERRIDES[cls][key]
     local lev = o and o.leveling or convert(row, true)
     local max = o and o.max or convert(row, false)
     lines[#lines + 1] = ("  { class = %q, classID = %d, key = %q, specID = %s, label = %s,"):format(
-      cls, classID, key, specID and tostring(specID) or "nil", label and ("%q"):format(label) or "nil")
+      cls, classID, key, specID and tostring(specID) or "nil", ("%q"):format(Label(key) .. " Forever"))
     lines[#lines + 1] = "    leveling = " .. serialize(lev) .. ","
     lines[#lines + 1] = "    max = " .. serialize(max) .. " },"
   end

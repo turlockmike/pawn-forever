@@ -32,16 +32,13 @@ local function AddScales()
     end
     for stat, v in pairs(spec[band]) do values[stat] = v end
 
-    local className, classFile = PawnGetClassInfo(spec.classID)
-    local specName, role, _ = spec.label, nil
-    if spec.specID then
-      local _, localized, _, _, r = PawnGetSpecializationInfoForClassID(spec.classID, spec.specID)
-      specName, role = specName or localized, r
-    end
+    local _, classFile = PawnGetClassInfo(spec.classID)
+    local role
+    if spec.specID then role = select(5, PawnGetSpecializationInfoForClassID(spec.classID, spec.specID)) end
     local color = RAID_CLASS_COLORS[classFile] and RAID_CLASS_COLORS[classFile].colorStr
     color = color and strsub(color, 3) or "ffffff"
 
-    PawnAddPluginScale(PROVIDER, InternalName(spec), (className or spec.class) .. ": " .. (specName or spec.key), color, values)
+    PawnAddPluginScale(PROVIDER, InternalName(spec), spec.label, color, values)
     local scale = PawnCommon.Scales[PF.ScaleName(spec)]
     if scale then
       scale.ClassID, scale.SpecID, scale.Role = spec.classID, spec.specID, role

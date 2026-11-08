@@ -28,7 +28,8 @@ jobs:
           VERSION="${TAG#v}"
           sed -i "s/^## Version: .*/## Version: ${VERSION}/" PawnForever/PawnForever.toc
           grep -q "^## Version: ${VERSION}" PawnForever/PawnForever.toc
-          zip -r "PawnForever-${TAG}.zip" PawnForever LICENSE
+          cp LICENSE PawnForever/LICENSE.txt
+          zip -r "PawnForever-${TAG}.zip" PawnForever
           # Release notes: the CHANGELOG.md section for this version (falls back to the tag name).
           awk -v v="$VERSION" '$0 ~ "^## "v"( |$)" {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
           [ -s notes.md ] || echo "Pawn Forever ${TAG}" > notes.md

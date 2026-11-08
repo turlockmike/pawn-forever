@@ -15,7 +15,7 @@ An add-on for [Pawn](https://www.curseforge.com/wow/addons/pawn) on **WoW Foreve
 The new tooltip patterns are built from the game's own localized tooltip strings (`TOOLTIP_ITEM_STAT_*`, `ITEM_MOD_*`), so they work on every client language Pawn supports. Each pattern is only added if Pawn doesn't already read that line, so the fixes switch themselves off as Pawn catches up. `/pff patterns` lists the patterns your client uses. Only the English client has been tested in game.
 
 ## Install
-Copy the `PawnForever` folder into `World of Warcraft\_forever_\Interface\AddOns\`. Pawn must also be installed. Then restart the game or log out to character select.
+Get it from [CurseForge](https://www.curseforge.com/projects/1792442) or the [GitHub releases](https://github.com/turlockmike/pawn-forever/releases), or copy the `PawnForever` folder into `World of Warcraft\_forever_\Interface\AddOns\`. Pawn must also be installed. Then restart the game or log out to character select.
 
 The first time each character logs in, Pawn Forever shows its own scale in place of every Pawn stock scale you had visible for your class. After that it never changes which scales are visible.
 

@@ -7,6 +7,7 @@
 ## SavedVariables: PawnForeverDB
 ## X-Website: https://github.com/turlockmike/pawn-forever
 ## X-License: MIT
+## X-Curse-Project-ID: 1792442
 
 Parsing.lua
 CacheFix.lua

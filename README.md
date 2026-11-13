@@ -41,6 +41,7 @@ To change weights, edit `tools/generate_weights.lua` and run it from the repo ro
 - `luajit tools/check_regexes.lua` runs Pawn's tooltip patterns plus Pawn Forever's over GearQuest Forever's 32k tooltip audit and lists the stat lines nobody reads. Add `--stock` to see Pawn alone. It needs Pawn and GearQuest Forever installed. The `ADDONS` environment variable points it at your AddOns folder.
 - `luajit tools/test_parsing.lua` checks how Pawn alone and Pawn + Pawn Forever read real Forever tooltip lines (mana per 5, zone bonuses). It needs Pawn installed (or `ADDONS` pointing at it).
 - `tools/fixtures/globals_enUS.lua` holds the English game strings the patterns are built from, dumped from the Forever client.
+- `tools/wowrun.ps1 -Code 'return PawnVersion'` runs Lua inside the running game and prints the result, without typing in chat. It needs the dev add-on `tools/WowBridge` copied into `Interface\AddOns` (Windows).
 - `tools/wowcmd.ps1 -Cmd "/reload" -Shot shot.png` types a slash command into the running WoW window and screenshots it (Windows).
 
 ## Releasing

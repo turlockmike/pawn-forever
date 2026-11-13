@@ -1,0 +1,7 @@
+## Interface: 16001
+## Title: WowBridge (dev)
+## Notes: Development tool: runs a Lua job from Job.lua on reload and saves the result, so tests need no chat typing. See tools/wowrun.ps1.
+## SavedVariables: WowBridgeDB
+
+Job.lua
+Bridge.lua

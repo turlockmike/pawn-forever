@@ -26,6 +26,7 @@ using System; using System.Runtime.InteropServices;
 public class WB {
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int n);
+  [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr h);
   [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
   [DllImport("user32.dll")] public static extern bool GetClientRect(IntPtr h, out RECT r);
   [DllImport("user32.dll")] public static extern bool ClientToScreen(IntPtr h, ref POINT p);
@@ -40,7 +41,7 @@ $p = Get-Process Wow -ErrorAction Stop | Where-Object { $_.MainWindowHandle -ne 
 $h = $p.MainWindowHandle
 function Click-Bridge {
   [WB]::keybd_event(0x12, 0, 0, [UIntPtr]::Zero); [WB]::keybd_event(0x12, 0, 2, [UIntPtr]::Zero)  # Alt tap so focus is allowed
-  [WB]::ShowWindow($h, 9) | Out-Null
+  if ([WB]::IsIconic($h)) { [WB]::ShowWindow($h, 9) | Out-Null }  # never restore a maximized window: it ends up larger than the screen
   [WB]::SetForegroundWindow($h) | Out-Null
   Start-Sleep -Milliseconds 400
   $c = New-Object WB+RECT; [WB]::GetClientRect($h, [ref]$c) | Out-Null

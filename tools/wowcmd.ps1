@@ -6,6 +6,7 @@ using System; using System.Runtime.InteropServices;
 public class W {
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int n);
+  [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr h);
   [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
   [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
   public struct RECT { public int L, T, R, B; }
@@ -15,7 +16,7 @@ $p = Get-Process Wow -ErrorAction Stop | Where-Object { $_.MainWindowHandle -ne 
 $h = $p.MainWindowHandle
 # Alt tap lets SetForegroundWindow succeed from a background process
 [W]::keybd_event(0x12, 0, 0, [UIntPtr]::Zero); [W]::keybd_event(0x12, 0, 2, [UIntPtr]::Zero)
-[W]::ShowWindow($h, 9) | Out-Null
+if ([W]::IsIconic($h)) { [W]::ShowWindow($h, 9) | Out-Null }  # never restore a maximized window: it ends up larger than the screen
 [W]::SetForegroundWindow($h) | Out-Null
 Start-Sleep -Milliseconds 400
 if ($Cmd) {

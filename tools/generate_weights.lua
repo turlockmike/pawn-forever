@@ -4,7 +4,6 @@
 -- Starting point: the per-spec WoW Forever weight tables that ship with GearQuest Forever (by Henrik8210),
 -- which score per point of rating. Pawn on Forever reads crit/hit/dodge/parry as percentages, so those are
 -- converted with the rating-per-1% values printed on real Forever tooltips (crit 14, hit 10, dodge 12, parry 15).
--- Balance and Restoration druid are hand-tuned overrides (see README).
 --
 -- Each spec gets two sets of values: "leveling" (used below level 60) and "max" (level 60).
 
@@ -40,22 +39,6 @@ local CLASSES = {
       { "battlemage_arcane", nil, "Battle Mage (Arcane)" }, { "battlemage_fire", nil, "Battle Mage (Fire)" }, { "battlemage_frost", nil, "Battle Mage (Frost)" } } },
   { "WARLOCK", 9, { { "affliction", 1 }, { "demonology", 2 }, { "destruction", 3 } } },
   { "DRUID", 11, { { "balance", 1 }, { "feral", 2 }, { "bear", 3 }, { "restoration", 4 } } },
-}
-
--- Hand-tuned druid caster scales (Pawn units: crit/hit/haste per 1%).
-local OVERRIDES = {
-  DRUID = {
-    balance = {
-      leveling = { SpellDamage = 1, NatureSpellDamage = 0.55, ArcaneSpellDamage = 0.5, Intellect = 0.55, Spirit = 0.3, Mp5 = 0.9,
-        CritRating = 8, HitRating = 10, HasteRating = 4, SpellPenetration = 0.2, Stamina = 0.15, Agility = 0.05, Armor = 0.003, Hp5 = 0.3 },
-      max = { SpellDamage = 1, NatureSpellDamage = 0.55, ArcaneSpellDamage = 0.5, Intellect = 0.45, Spirit = 0.1, Mp5 = 0.6,
-        CritRating = 8, HitRating = 10, HasteRating = 4, SpellPenetration = 0.2, Stamina = 0.1, Agility = 0.05, Armor = 0.003, Hp5 = 0.1 },
-    },
-    restoration = {
-      leveling = { Healing = 1, Intellect = 0.6, Spirit = 0.6, Mp5 = 2, CritRating = 4, HasteRating = 3, Stamina = 0.1, Agility = 0.03, Armor = 0.003, Hp5 = 0.3 },
-      max = { Healing = 1, Intellect = 0.5, Spirit = 0.5, Mp5 = 2.5, CritRating = 4, HasteRating = 3, Stamina = 0.1, Agility = 0.03, Armor = 0.003, Hp5 = 0.1 },
-    },
-  },
 }
 
 -- Scale names shown in Pawn: "<label> Forever". Pawn's own spec names are retail ones (Outlaw, Guardian), so not used.
@@ -108,9 +91,7 @@ for _, c in ipairs(CLASSES) do
   for _, s in ipairs(specs) do
     local key, specID = s[1], s[2]
     local row = assert(GQ.ScoringWeights[cls][key], cls .. "." .. key .. " missing from GearQuest data")
-    local o = OVERRIDES[cls] and OVERRIDES[cls][key]
-    local lev = o and o.leveling or convert(row, true)
-    local max = o and o.max or convert(row, false)
+    local lev, max = convert(row, true), convert(row, false)
     lines[#lines + 1] = ("  { class = %q, classID = %d, key = %q, specID = %s, label = %s,"):format(
       cls, classID, key, specID and tostring(specID) or "nil", ("%q"):format(Label(key) .. " Forever"))
     lines[#lines + 1] = "    leveling = " .. serialize(lev) .. ","

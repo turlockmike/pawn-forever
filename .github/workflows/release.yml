@@ -52,7 +52,8 @@ jobs:
           fi
           METADATA=$(jq -n --rawfile notes notes.md --arg name "Pawn Forever ${TAG}" --arg ids "$CF_GAME_VERSION_IDS" \
             '{changelog: $notes, changelogType: "markdown", releaseType: "release", displayName: $name,
-              gameVersions: ($ids | split(",") | map(gsub(" "; "") | tonumber))}')
+              gameVersions: ($ids | split(",") | map(gsub(" "; "") | tonumber)),
+              relations: {projects: [{slug: "pawn", type: "requiredDependency"}]}}')
           curl --fail-with-body -sS \
             -H "X-Api-Token: ${CF_API_TOKEN}" \
             -F "metadata=${METADATA}" \

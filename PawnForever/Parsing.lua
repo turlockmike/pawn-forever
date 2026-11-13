@@ -104,6 +104,22 @@ for _, school in ipairs({ "FIRE", "FROST", "ARCANE", "SHADOW", "NATURE", "HOLY" 
   AddBoth(_G["TOOLTIP_ITEM_STAT_" .. school .. "_DAMAGE_INCREASE"], { { stat, 1 } })
 end
 
+-- Zone bonus on any other Equip: stat, e.g. "Equip: +14 Attack Power. This effect is tripled in Forest and Grassland areas."
+-- Drops the zone sentence so Pawn's own pattern reads the base value. English only (no game string for it);
+-- "Use:" effects are left alone because Pawn doesn't score them.
+if GetLocale() == "enUS" or GetLocale() == "enGB" then
+  local line = "Equip: +7 Attack Power. This effect is tripled in Forest and Grassland areas."
+  if not PawnUnderstands(line) and type(PawnNormalizationRegexes) == "table" then
+    local rule = { "^(" .. EQUIP .. " .-%.) This effect is %a+ in [^%.]- areas%.$", "%1" }
+    tinsert(PawnNormalizationRegexes, rule)
+    if PawnUnderstands(line) then
+      tinsert(PF.AddedPatterns, { pattern = rule[1], sample = line })
+    else
+      tremove(PawnNormalizationRegexes) -- Pawn can't read the base line either, so the rule doesn't help.
+    end
+  end
+end
+
 -- Leg-armor style enchant line. There's no game string for it, so English only.
 if GetLocale() == "enUS" or GetLocale() == "enGB" then
   local line = "Stamina +7 and Armor +7"

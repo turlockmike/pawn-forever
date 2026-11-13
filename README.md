@@ -5,7 +5,7 @@ An add-on for [Pawn](https://www.curseforge.com/wow/addons/pawn) on **WoW Foreve
 1. **Reads the tooltip lines Pawn misses on Forever.** Pawn 2.14.1 scores these as 0:
    - `Restores +4 mana per 5 sec.` (914 Forever items)
    - `Equip: Increases healing done by magical spells and effects by up to 12.` (235 items)
-   - Zone-bonus lines such as `... by up to 8. This effect is tripled in Forest and Grassland areas.` (the base value counts)
+   - Zone-bonus lines such as `... by up to 8. This effect is tripled in Forest and Grassland areas.` or `Equip: +14 Attack Power. This effect is tripled in ...` (the base value counts)
 
    Running Pawn's own patterns over 32,142 real Forever tooltips leaves 4,354 stat lines unread. With Pawn Forever installed, 3,147 remain, and they are procs, "Use:" effects and set names that Pawn doesn't score anyway.
 2. **Fixes the hover lag.** On Forever, Pawn re-reads an item's whole tooltip every time it looks up a cached value, which makes hovering items stutter. Pawn Forever trusts an item once Pawn has returned the same result twice. This is temporary and comes out once Pawn fixes it upstream.
@@ -49,6 +49,7 @@ To change weights, edit `tools/generate_weights.lua` and run it from the repo ro
 
 ## Development
 - `luajit tools/check_regexes.lua` runs Pawn's tooltip patterns plus Pawn Forever's over GearQuest Forever's 32k tooltip audit and lists the stat lines nobody reads. Add `--stock` to see Pawn alone. It needs Pawn and GearQuest Forever installed. The `ADDONS` environment variable points it at your AddOns folder.
+- `luajit tools/test_parsing.lua` checks how Pawn alone and Pawn + Pawn Forever read real Forever tooltip lines (mana per 5, zone bonuses). It needs Pawn installed (or `ADDONS` pointing at it).
 - `tools/fixtures/globals_enUS.lua` holds the English game strings the patterns are built from, dumped from the Forever client.
 - `tools/wowcmd.ps1 -Cmd "/reload" -Shot shot.png` types a slash command into the running WoW window and screenshots it (Windows).
 

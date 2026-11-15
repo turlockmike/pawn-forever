@@ -41,8 +41,11 @@ local function Read(line)
   local stats = {}
   local i = 2
   while entry[i] do
-    local idx = entry[i + 1] or 1
-    stats[entry[i]] = (stats[entry[i]] or 0) + tonumber((m[idx] or ""):gsub("[^%d%.%-]", ""), 10)
+    local number, source = entry[i + 1] or 1, entry[i + 2]
+    local idx = source == PawnMultipleStatsExtract and number or 1
+    local value = tonumber((m[idx] or ""):gsub("[^%d%.%-]", ""), 10)
+    if source == PawnSingleStatMultiplier then value = value * number end
+    stats[entry[i]] = (stats[entry[i]] or 0) + value
     i = i + 3
   end
   return stats
@@ -65,6 +68,16 @@ local cases = {
   { "zone healing", "Equip: Increases healing done by magical spells and effects by up to 12. This effect is doubled in Swamp areas.", { Healing = 12 } },
   { "284268 Furbolg Shaman's Girdle (Wowhead text)", "Restores +5 mana per 5 sec.", { Mp5 = 5 } },
   { "Equip: mana per 5", "Equip: Restores 5 mana per 5 sec.", { Mp5 = 5 } },
+  { "280059 Tuskblade Halberd (expertise)", "Equip: Reduces chance to be Dodged or Parried by 2.0%.", { ExpertiseRating = 2 } },
+  { "19431 Styleen's Impeding Scarab", "+24 Block Value", { BlockValue = 24 } },
+  { "18833 Grand Marshal's Bullseye", "+36 Ranged Attack Power", { Rap = 36 } },
+  { "240063 Waywatcher Trousers", "Equip: +4 Weapon Damage.", { MeleeDps = 1.32, RangedDps = 1.32 } },
+  { "271904 Volunteer's Lucky Seal", "Equip: Increases all Resistances by 3. Gain an additional 5 to all Resistances in Forest and Grassland areas.",
+    { ArcaneResist = 3, FireResist = 3, FrostResist = 3, NatureResist = 3, ShadowResist = 3 } },
+  { "13255 Trueaim Gauntlets (as a hunter)", "Equip: Improves your chance to hit with ranged weapons by 3.0%.", { HitRating = 3 } },
+  -- Must stay as Pawn reads them.
+  { "weapon damage line", "148 - 222 Damage", { MinDamage = 148, MaxDamage = 222 } },
+  { "Equip: block value", "Equip: Increases the Block Value of your shield by 15.", { BlockValue = 15 } },
   -- Must stay unread: Pawn doesn't score Use: effects.
   { "249470 Molten Heart of the Mountain (Use:)", "Use: Increase Attack Power by 55 for 15 sec. This effect is doubled in Volcanic areas. (5 Min Cooldown)", nil },
 }
@@ -73,6 +86,7 @@ local stock = {}
 for i, c in ipairs(cases) do stock[i] = Show(Read(c[2])) end
 
 dofile("tools/fixtures/globals_enUS.lua")
+UnitClass = function() return "Hunter", "HUNTER" end -- the ranged-hit line is only read for hunters
 local PF = {}
 assert(loadfile("PawnForever/Parsing.lua"))("PawnForever", PF)
 

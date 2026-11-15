@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 (2026-11-15)
+- Expertise (`Equip: Reduces chance to be Dodged or Parried by 1.0%.`) now has a value: the spec's hit value for melee damage specs, 1.5x hit for tanks, 5% of hit for hunters, none for casters and healers. GearQuest has no expertise weight, so this one is set by Pawn Forever.
+- Now read: `+24 Block Value` and `+36 Ranged Attack Power` (the plain wording without "Equip:"), and all-resistance lines with a zone bonus (base value, English clients).
+- `Equip: +2 Weapon Damage.` on armor now counts as weapon DPS (a third of a DPS per point) instead of nothing.
+- Hunters: `Equip: Improves your chance to hit with ranged weapons by 1.0%.` counts as hit (English clients).
+- Weights regenerated from the current GearQuest Forever data (Bear weapon DPS 2.52 -> 4.9).
+
 ## 1.1.0 (2026-11-12)
 - Updated for Pawn 2.14.2, which is now the minimum version.
 - Removed the hover-lag workaround: Pawn 2.14.2 fixes the lag itself.

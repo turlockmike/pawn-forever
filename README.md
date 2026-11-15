@@ -4,10 +4,12 @@ An add-on for [Pawn](https://www.curseforge.com/wow/addons/pawn) on **WoW Foreve
 
 1. **Reads the tooltip lines Pawn misses on Forever.** Pawn 2.14.2 scores these as 0:
    - `Restores +4 mana per 5 sec.` (910 Forever items)
+   - `+24 Block Value` and `+36 Ranged Attack Power` (the plain wording without "Equip:")
+   - `Equip: +2 Weapon Damage.` on armor, which Pawn reads but no scale values (counted as weapon DPS)
    - Zone-bonus lines such as `... by up to 8. This effect is tripled in Forest and Grassland areas.`, `Equip: +14 Attack Power. This effect is tripled in ...` or `Restores an additional 3 Mana per 5 sec in Forest and Grassland areas.` (the base value counts)
 
    Running Pawn's own patterns over 32,336 real Forever tooltips leaves 4,129 lines unread. With Pawn Forever installed, 3,156 remain, and they are procs, "Use:" effects and set names that Pawn doesn't score anyway.
-2. **Adds "Pawn Forever" weights for every spec** of all nine classes, plus Forever's extra builds (Battle Mage, Shockadin, Enhancement Tank). Below level 60 the leveling weights apply. At 60 the scales switch to endgame weights automatically.
+2. **Adds "Pawn Forever" weights for every spec** of all nine classes, plus Forever's extra builds (Battle Mage, Shockadin, Enhancement Tank). Below level 60 the leveling weights apply. At 60 the scales switch to endgame weights automatically. The weights come from GearQuest Forever, plus a value for expertise (`Reduces chance to be Dodged or Parried`), which GearQuest doesn't weigh.
 
 Versions before 1.1.0 also fixed Pawn's hover lag on Forever. Pawn 2.14.2 fixed that itself, so the workaround was removed.
 

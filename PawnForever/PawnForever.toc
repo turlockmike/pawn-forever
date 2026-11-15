@@ -2,7 +2,7 @@
 ## Title: Pawn Forever
 ## Notes: Pawn add-on for WoW Forever: reads the Forever tooltip lines Pawn misses (mana per 5, zone bonuses) and adds Pawn Forever weights for every spec.
 ## Author: turlockmike
-## Version: 1.1.0
+## Version: 1.2.0
 ## Dependencies: Pawn
 ## SavedVariables: PawnForeverDB
 ## X-Website: https://github.com/turlockmike/pawn-forever

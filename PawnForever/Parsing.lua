@@ -120,6 +120,63 @@ if GetLocale() == "enUS" or GetLocale() == "enGB" then
   end
 end
 
+local ENGLISH = GetLocale() == "enUS" or GetLocale() == "enGB"
+
+-- Plain "+15 Block Value" (41 Forever items) and "+36 Ranged Attack Power" (33) lines. Pawn only reads the "Equip:" wording.
+local function AddShort(name, stat)
+  if type(name) ~= "string" or name == "" then return end
+  local sample = "+7 " .. name
+  if PawnUnderstands(sample) then return end
+  local pattern = "^%+?" .. NUMBER .. " " .. Escape(name) .. "$"
+  tinsert(PawnRegexes, { pattern, stat })
+  tinsert(PF.AddedPatterns, { pattern = pattern, sample = sample })
+end
+AddShort(ITEM_MOD_BLOCK_VALUE_SHORT, "BlockValue")
+AddShort(ITEM_MOD_RANGED_ATTACK_POWER_SHORT, "Rap")
+if ENGLISH then
+  AddShort("Block Value", "BlockValue")
+  AddShort("Ranged Attack Power", "Rap")
+end
+
+-- "Equip: +2 Weapon Damage." on armor (Waywatcher set, Edgemaster's Handguards, ...). Pawn files it under
+-- MinDamage/MaxDamage, which scales don't value on a non-weapon. Count it as weapon DPS instead: +1 damage per
+-- swing is about a third of a DPS at a typical 3.0 weapon speed. Skipped once Pawn stops reading it as MinDamage.
+do
+  local pattern = PawnLocal and PawnLocal.TooltipParsing and PawnLocal.TooltipParsing.WeaponDamageEquip
+  local current
+  for _, entry in ipairs(PawnRegexes) do
+    if entry[1] == pattern then current = entry break end
+  end
+  if type(pattern) == "string" and current and current[2] == "MinDamage" and PawnSingleStatMultiplier then
+    -- Inserted first so it wins over Pawn's own entry for the same line.
+    tinsert(PawnRegexes, 1, { pattern, "MeleeDps", 0.33, PawnSingleStatMultiplier, "RangedDps", 0.33, PawnSingleStatMultiplier })
+    tinsert(PF.AddedPatterns, { pattern = pattern, sample = "Equip: +7 Weapon Damage." })
+  end
+end
+
+if ENGLISH then
+  -- All resistances with a zone bonus (base value only), e.g. Volunteer's Lucky Seal:
+  -- "Equip: Increases all Resistances by 3. Gain an additional 5 to all Resistances in Forest and Grassland areas."
+  local line = "Equip: Increases all Resistances by 7. Gain an additional 7 to all Resistances in Forest and Grassland areas."
+  local base = PawnFindStringInRegexTable("+7 to All Resistances", PawnRegexes)
+  if base and not PawnUnderstands(line) then
+    local entry = { "^Equip: Increases all Resistances by " .. NUMBER .. "%. Gain an additional .+$" }
+    for i = 2, #base do entry[i] = base[i] end -- the same stats Pawn gives "+7 to All Resistances"
+    tinsert(PawnRegexes, entry)
+    tinsert(PF.AddedPatterns, { pattern = entry[1], sample = line })
+  end
+
+  -- Ranged hit ("Equip: Improves your chance to hit with ranged weapons by 1.0%."). Pawn has no ranged-hit stat,
+  -- so it counts as hit for hunters and stays unread for everyone else.
+  local class = UnitClass and select(2, UnitClass("player"))
+  line = "Equip: Improves your chance to hit with ranged weapons by 7.0%."
+  if class == "HUNTER" and not PawnUnderstands(line) then
+    local pattern = "^Equip: Improves your chance to hit with ranged weapons by " .. NUMBER .. "%%%.$"
+    tinsert(PawnRegexes, { pattern, "HitRating" })
+    tinsert(PF.AddedPatterns, { pattern = pattern, sample = line })
+  end
+end
+
 -- Leg-armor style enchant line. There's no game string for it, so English only.
 if GetLocale() == "enUS" or GetLocale() == "enGB" then
   local line = "Stamina +7 and Armor +7"

@@ -51,7 +51,7 @@ local function grab(file)
   local f = io.open(file, "rb"); if not f then return end
   local s = f:read("*a"); f:close()
   for tip in s:gmatch('tip="(.-[^\\])"') do tips[#tips + 1] = tip end
-  for _, tip in s:gmatch('%[(%d+)%]="(Item Level.-[^\\])"') do tips[#tips + 1] = tip end
+  for _, tip in s:gmatch('%[(%d+)%]="(.-[^\\])"') do tips[#tips + 1] = tip end
 end
 grab(P .. "GearQuestForever/_generated/Data.ForeverAudit.generated.lua")
 for _, c in ipairs { "DRUID", "HUNTER", "MAGE", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR" } do

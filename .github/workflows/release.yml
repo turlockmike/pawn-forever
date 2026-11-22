@@ -33,14 +33,18 @@ jobs:
           lua5.1 tools/check_packaging.lua "$VERSION"
           cp LICENSE Pawn_Forever/LICENSE.txt
           zip -r "Pawn_Forever-${TAG}.zip" Pawn_Forever
-          # Release notes: the CHANGELOG.md section for this version (must be non-empty).
+          # Release notes for GitHub: just this version's section (must be non-empty).
           awk -v v="$VERSION" '$0 ~ "^## "v"( |$)" {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
           [ -s notes.md ] || { echo "Missing CHANGELOG.md section for ${VERSION}" >&2; exit 1; }
           cat notes.md
+          # CurseForge's Changelog tab only shows the latest file's changelog, so send the full
+          # versioned CHANGELOG.md (newest on top, stripping the top "# Changelog" heading).
+          awk 'NR==1 && /^# / {next} {print}' CHANGELOG.md | sed '/./,$!d' > cf_changelog.md
+          [ -s cf_changelog.md ] || { echo "Empty cf_changelog.md" >&2; exit 1; }
           # Pre-validate CurseForge JSON metadata before creating the GitHub release so a bad payload fails early.
           if [ -n "$CF_GAME_VERSION_IDS" ]; then
-            jq -n --rawfile notes notes.md --arg name "Pawn Forever ${TAG}" --arg ids "$CF_GAME_VERSION_IDS" \
-              '{changelog: $notes, changelogType: "markdown", releaseType: "release", displayName: $name,
+            jq -n --rawfile changelog cf_changelog.md --arg name "Pawn Forever ${TAG}" --arg ids "$CF_GAME_VERSION_IDS" \
+              '{changelog: $changelog, changelogType: "markdown", releaseType: "release", displayName: $name,
                 gameVersions: ($ids | split(",") | map(gsub(" "; "") | tonumber)),
                 relations: {projects: [{slug: "pawn", type: "requiredDependency"}]}}' > metadata.json
             jq -e . metadata.json >/dev/null

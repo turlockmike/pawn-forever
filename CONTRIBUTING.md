@@ -34,6 +34,6 @@ Edit `tools/generate_weights.lua` (not `Pawn_Forever/Weights.lua` directly) if c
 1. Bump `## Version:` in `Pawn_Forever/Pawn_Forever.toc` and add a matching `## x.y.z (YYYY-MM-DD)` section at the top of `CHANGELOG.md`.
 2. Run `luajit tools/check_packaging.lua`, `luajit tools/test_parsing.lua`, and `luajit tools/test_scales.lua`.
 3. Commit, then tag and push: `git tag vx.y.z && git push origin main vx.y.z`.
-4. `.github/workflows/release.yml` runs `check_packaging.lua`, pre-validates the CurseForge JSON metadata with `jq` before publishing, packages `Pawn_Forever-vx.y.z.zip`, creates the GitHub release, and uploads to CurseForge using `curl --form-string` (never `-F`, which truncates JSON at semicolons).
+4. `.github/workflows/release.yml` runs `check_packaging.lua`, pre-validates the CurseForge JSON metadata with `jq` before publishing, packages `Pawn_Forever-vx.y.z.zip`, creates the GitHub release (with this version's notes), and uploads to CurseForge with the full versioned `CHANGELOG.md` (newest on top) using `curl --form-string` (never `-F`, which truncates JSON at semicolons).
 5. Never delete or rewrite a pushed release tag if a workflow step fails — fix the workflow and bump a patch version instead.
 6. CurseForge's upload API does not update the project avatar — if `media/logo.png` changed, upload it manually under CurseForge project settings.

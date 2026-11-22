@@ -1,4 +1,4 @@
--- Builds PawnForever/Weights.lua.
+-- Builds Pawn_Forever/Weights.lua.
 -- Usage (from the repo root): luajit tools/generate_weights.lua "<path to GearQuestForever/_generated/ScoringWeights.generated.lua>"
 --
 -- Starting point: the per-spec WoW Forever weight tables that ship with GearQuest Forever (by Henrik8210),
@@ -121,7 +121,7 @@ for _, c in ipairs(CLASSES) do
   end
 end
 lines[#lines + 1] = "}"
-local f = assert(io.open("PawnForever/Weights.lua", "wb"))
+local f = assert(io.open("Pawn_Forever/Weights.lua", "wb"))
 f:write(table.concat(lines, "\n") .. "\n")
 f:close()
-print("wrote PawnForever/Weights.lua")
+print("wrote Pawn_Forever/Weights.lua")

@@ -49,12 +49,19 @@ end
 -- Show this character's Pawn Forever scales in place of the stock ones it was using.
 -- Runs once per character; afterwards the player's own choices in Pawn are left alone.
 local function FirstRunVisibility()
-  PawnForeverDB.setupDone = PawnForeverDB.setupDone or {}
+  Pawn_ForeverDB.setupDone = Pawn_ForeverDB.setupDone or {}
   local who = PawnPlayerFullName or UnitName("player")
-  if PawnForeverDB.setupDone[who] then return end
-  PawnForeverDB.setupDone[who] = true
+  if Pawn_ForeverDB.setupDone[who] then return end
+  Pawn_ForeverDB.setupDone[who] = true
 
   local _, myClass = UnitClass("player")
+
+  -- Existing users upgrading from the pre-1.3.0 PawnForever folder already have their Pawn scale visibility
+  -- saved inside PawnCommon.Scales; leave their choices alone instead of re-swapping.
+  for _, spec in ipairs(PF.Weights) do
+    if spec.class == myClass and PawnIsScaleVisible(PF.ScaleName(spec)) then return end
+  end
+
   local shown = 0
 
   -- Version 1 of this addon imported two custom druid scales; replace them.
@@ -109,7 +116,7 @@ local function Refresh()
 end
 
 PawnAddPluginScaleProvider(PROVIDER, "Pawn Forever", function()
-  PawnForeverDB = PawnForeverDB or {} -- providers run at PLAYER_LOGIN, after saved variables load
+  Pawn_ForeverDB = Pawn_ForeverDB or {} -- providers run at PLAYER_LOGIN, after saved variables load
   AddScales()
   FirstRunVisibility()
 end)

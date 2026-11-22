@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.0 (2026-11-21)
+- **Renamed installation folder to `Pawn_Forever`** (and saved variables to `Pawn_ForeverDB`) to eliminate the CurseForge folder collision with Direcktive's unrelated standalone addon ("PawnForever - Alternative to Pawn"). Existing Pawn users keep their scale visibility settings automatically; if installing manually, delete the old `PawnForever` folder.
+- Updated the project logo and added an AddOn list icon (`Icon.tga`) with `Equipment` category metadata so Pawn Forever nests cleanly under Pawn without the default `?` icon.
+- Reconciled with **Pawn 2.14.8** (Pawn 2.14.3+ natively reads Forever's combined Haste and non-English bonus armor, and Pawn 2.14.4+ allows 1H Axes for Rogues on Forever, which Pawn Forever inherits automatically).
+- Now read (English clients):
+  - Forever split-crit items (`Equip: Improves your chance to get a Critical Strike with Melee and Ranged attacks by #%.` such as Blackhand's Breadth, and `... with Spells by #%.` such as Eye of the Beast), enabled only for classes that use that crit type.
+  - Zone-bonus Spell Penetration (`Equip: Your spells pierce # Magical Resistances. Gain an additional ...`, e.g. Rune of Perfection) — base value counts.
+  - Base Attack Power on doubled-vs-type items (`Equip: +# Attack Power, doubled against Mechanical units.` / `Undead targets.`, e.g. Counterattack Lodestone).
+  - Base Spell Damage & Healing on conditional-bonus items (`Equip: Increases spell damage and healing by up to #. Grants an additional ...`, e.g. Royal Seal of Eldre'Thalas).
+  - Elemental damage added to melee/weapon attacks (`Equip: Adds # Fire/Frost/Arcane/Lightning damage to your melee attacks.` / `weapon attack.`, e.g. Blazefury Medallion, Storm Gauntlets, Fiery Plate Gauntlets), valued at 0.33 Melee DPS per point.
+  - Permanent party-aura `Equip:` stats (Medallion of Faith Hp5 and all four Atiesh party auras).
+  - Plain `+# Armor Penetration`.
+- Weights regenerated from GearQuest Forever 1.3.1 (Enhancement Shaman Agility 1 → 0.6, Intellect 0.7 → 0.75; Bear Druid Crit 3.5 → 8.12, Hit 4 → 8.8, Expertise 6 → 13.2, Stamina 1 → 0.72).
+
 ## 1.2.0 (2026-11-15)
 - Expertise (`Equip: Reduces chance to be Dodged or Parried by 1.0%.`) now has a value: the spec's hit value for melee damage specs, 1.5x hit for tanks, 5% of hit for hunters, none for casters and healers. GearQuest has no expertise weight, so this one is set by Pawn Forever.
 - Now read: `+24 Block Value` and `+36 Ranged Attack Power` (the plain wording without "Equip:"), and all-resistance lines with a zone bonus (base value, English clients).

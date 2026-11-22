@@ -11,6 +11,7 @@ PF.AddedPatterns = {}
 
 local NUMBER = "(-?[%d%., ]+)"
 local EQUIP = ITEM_SPELL_TRIGGER_ONEQUIP -- "Equip:"
+local ENGLISH = GetLocale() == "enUS" or GetLocale() == "enGB"
 
 local function Normalize(s)
   s = strtrim(s or "")
@@ -86,12 +87,19 @@ local function AddBoth(template, stats)
   Add(template, stats, true)
 end
 
--- Mana per 5: "Restores +4 mana per 5 sec." (914 Forever items) and zone-bonus versions.
+local function AddRaw(sample, entry)
+  if not PawnUnderstands(sample) then
+    tinsert(PawnRegexes, entry)
+    tinsert(PF.AddedPatterns, { pattern = entry[1], sample = sample })
+  end
+end
+
+-- Mana per 5: "Restores +4 mana per 5 sec." (944 Forever items) and zone-bonus versions.
 AddBoth(ITEM_MOD_MANA_REGENERATION, { { "Mp5", 1 } })
 AddBoth(TOOLTIP_ITEM_STAT_MANA_REGEN_INCREASE, { { "Mp5", 1 } })
 AddBoth(ITEM_MOD_HEALTH_REGENERATION, { { "Hp5", 1 } })
 AddBoth(TOOLTIP_ITEM_STAT_HEALTH_REGEN_INCREASE, { { "Hp5", 1 } })
--- Healing only: "Increases healing done by magical spells and effects by up to 12." (235 items)
+-- Healing only: "Increases healing done by magical spells and effects by up to 12."
 AddBoth(TOOLTIP_ITEM_STAT_SPELL_HEALING_INCREASE, { { "Healing", 1 } })
 AddBoth(ITEM_MOD_SPELL_HEALING_DONE, { { "Healing", 1 } })
 -- Damage and healing / damage only, including "This effect is tripled in ..." zone bonuses (base value only).
@@ -107,7 +115,7 @@ end
 -- Zone bonus on any other Equip: stat, e.g. "Equip: +14 Attack Power. This effect is tripled in Forest and Grassland areas."
 -- Drops the zone sentence so Pawn's own pattern reads the base value. English only (no game string for it);
 -- "Use:" effects are left alone because Pawn doesn't score them.
-if GetLocale() == "enUS" or GetLocale() == "enGB" then
+if ENGLISH then
   local line = "Equip: +7 Attack Power. This effect is tripled in Forest and Grassland areas."
   if not PawnUnderstands(line) and type(PawnNormalizationRegexes) == "table" then
     local rule = { "^(" .. EQUIP .. " .-%.) This effect is %a+ in [^%.]- areas%.$", "%1" }
@@ -120,9 +128,8 @@ if GetLocale() == "enUS" or GetLocale() == "enGB" then
   end
 end
 
-local ENGLISH = GetLocale() == "enUS" or GetLocale() == "enGB"
-
--- Plain "+15 Block Value" (41 Forever items) and "+36 Ranged Attack Power" (33) lines. Pawn only reads the "Equip:" wording.
+-- Plain "+15 Block Value", "+36 Ranged Attack Power", and "+50 Armor Penetration" lines.
+-- Pawn only reads the "Equip:" wording for Block Value / Ranged AP.
 local function AddShort(name, stat)
   if type(name) ~= "string" or name == "" then return end
   local sample = "+7 " .. name
@@ -136,6 +143,7 @@ AddShort(ITEM_MOD_RANGED_ATTACK_POWER_SHORT, "Rap")
 if ENGLISH then
   AddShort("Block Value", "BlockValue")
   AddShort("Ranged Attack Power", "Rap")
+  AddShort("Armor Penetration", "ArmorPenetration")
 end
 
 -- "Equip: +2 Weapon Damage." on armor (Waywatcher set, Edgemaster's Handguards, ...). Pawn files it under
@@ -155,6 +163,10 @@ do
 end
 
 if ENGLISH then
+  local class = UnitClass and select(2, UnitClass("player"))
+  local PHYSICAL_CRIT = { WARRIOR = true, ROGUE = true, HUNTER = true, PALADIN = true, DRUID = true, SHAMAN = true }
+  local SPELL_CRIT = { MAGE = true, PRIEST = true, WARLOCK = true, PALADIN = true, DRUID = true, SHAMAN = true }
+
   -- All resistances with a zone bonus (base value only), e.g. Volunteer's Lucky Seal:
   -- "Equip: Increases all Resistances by 3. Gain an additional 5 to all Resistances in Forest and Grassland areas."
   local line = "Equip: Increases all Resistances by 7. Gain an additional 7 to all Resistances in Forest and Grassland areas."
@@ -166,23 +178,65 @@ if ENGLISH then
     tinsert(PF.AddedPatterns, { pattern = entry[1], sample = line })
   end
 
+  -- Spell penetration with plural "Magical Resistances" and/or zone bonus (base value only), e.g. Rune of Perfection:
+  -- "Equip: Your spells pierce 3 Magical Resistances. Gain an additional 7 Spell Piercing in Forest and Grassland areas."
+  AddRaw("Equip: Your spells pierce 7 Magical Resistances.",
+    { "^Equip: Your spells pierce " .. NUMBER .. " Magical Resistances%.$", "SpellPenetration" })
+  AddRaw("Equip: Your spells pierce 7 Magical Resistances. Gain an additional 7 Spell Piercing in Forest and Grassland areas.",
+    { "^Equip: Your spells pierce " .. NUMBER .. " Magical Resistances?%. Gain an additional .+$", "SpellPenetration" })
+
+  -- Base Attack Power with conditional doubling, e.g. Counterattack Lodestone:
+  -- "Equip: +30 Attack Power, doubled against Mechanical units." / "... doubled against Undead targets."
+  AddRaw("Equip: +7 Attack Power, doubled against Mechanical units.",
+    { "^Equip: %+" .. NUMBER .. " Attack Power, doubled against .+%.$", "Ap" })
+
+  -- Base spell damage & healing with conditional bonus, e.g. Royal Seal of Eldre'Thalas:
+  -- "Equip: Increases spell damage and healing by up to 18. Grants an additional 18 spell damage against Demons."
+  AddRaw("Equip: Increases spell damage and healing by up to 7. Grants an additional 7 spell damage against Demons.",
+    { "^Equip: Increases spell damage and healing by up to " .. NUMBER .. "%. Grants an additional .+$",
+      "SpellDamage", 1, PawnMultipleStatsExtract, "Healing", 1, PawnMultipleStatsExtract })
+
+  -- Elemental damage added to melee/weapon attacks (Blazefury Medallion, Storm Gauntlets, Fiery Plate Gauntlets, ...).
+  -- Same ~0.33 MeleeDps per point approximation as "Equip: +X Weapon Damage." above.
+  if PawnSingleStatMultiplier then
+    AddRaw("Equip: Adds 7 fire damage to your melee attacks.",
+      { "^Equip: Adds " .. NUMBER .. " %a+ damage to your melee attacks%.$", "MeleeDps", 0.33, PawnSingleStatMultiplier })
+    AddRaw("Equip: Adds 7 Fire damage to your weapon attack.",
+      { "^Equip: Adds " .. NUMBER .. " %a+ damage to your weapon attack%.$", "MeleeDps", 0.33, PawnSingleStatMultiplier })
+  end
+
+  -- Party-wide permanent Equip: auras (always active on the wearer: Medallion of Faith, Atiesh).
+  AddRaw("Equip: Cause party members within 30 yds to regenerate 7 health every 5 sec.",
+    { "^Equip: Cause party members within %d+ yds? to regenerate " .. NUMBER .. " [hH]ealth every 5 sec%.$", "Hp5" })
+  AddRaw("Equip: Restores 7 mana per 5 seconds to all party members within 30 yards.",
+    { "^Equip: Restores " .. NUMBER .. " [mM]ana per 5 seconds? to all party members within %d+ yards?%.$", "Mp5" })
+  AddRaw("Equip: Increases healing done by magical spells and effects of all party members within 30 yards by up to 7.",
+    { "^Equip: Increases healing done by magical spells and effects of all party members within %d+ yards? by up to " .. NUMBER .. "%.$", "Healing" })
+  AddRaw("Equip: Increases damage and healing done by magical spells and effects of all party members within 30 yards by up to 7.",
+    { "^Equip: Increases damage and healing done by magical spells and effects of all party members within %d+ yards? by up to " .. NUMBER .. "%.$",
+      "SpellDamage", 1, PawnMultipleStatsExtract, "Healing", 1, PawnMultipleStatsExtract })
+
   -- Ranged hit ("Equip: Improves your chance to hit with ranged weapons by 1.0%."). Pawn has no ranged-hit stat,
   -- so it counts as hit for hunters and stays unread for everyone else.
-  local class = UnitClass and select(2, UnitClass("player"))
-  line = "Equip: Improves your chance to hit with ranged weapons by 7.0%."
-  if class == "HUNTER" and not PawnUnderstands(line) then
-    local pattern = "^Equip: Improves your chance to hit with ranged weapons by " .. NUMBER .. "%%%.$"
-    tinsert(PawnRegexes, { pattern, "HitRating" })
-    tinsert(PF.AddedPatterns, { pattern = pattern, sample = line })
+  if class == "HUNTER" then
+    AddRaw("Equip: Improves your chance to hit with ranged weapons by 7.0%.",
+      { "^Equip: Improves your chance to hit with ranged weapons by " .. NUMBER .. "%%%.$", "HitRating" })
   end
-end
 
--- Leg-armor style enchant line. There's no game string for it, so English only.
-if GetLocale() == "enUS" or GetLocale() == "enGB" then
-  local line = "Stamina +7 and Armor +7"
-  if not PawnUnderstands(line) then
-    local pattern = "^Stamina %+" .. NUMBER .. " and Armor %+" .. NUMBER .. "$"
-    tinsert(PawnRegexes, { pattern, "Stamina", 1, PawnMultipleStatsExtract, "Armor", 2, PawnMultipleStatsExtract })
-    tinsert(PF.AddedPatterns, { pattern = pattern, sample = line })
+  -- Forever split-crit items (Blackhand's Breadth, Eye of the Beast, Atiesh Mage). Pawn on Forever uses a single
+  -- CritRating stat across all scales, so each line is only enabled for classes that benefit from it.
+  if PHYSICAL_CRIT[class] then
+    AddRaw("Equip: Improves your chance to get a Critical Strike with Melee and Ranged attacks by 7.0%.",
+      { "^Equip: Improves your chance to get a [cC]ritical [sS]trike with [mM]elee and [rR]anged attacks by " .. NUMBER .. "%%%.$", "CritRating" })
   end
+  if SPELL_CRIT[class] then
+    AddRaw("Equip: Improves your chance to get a Critical Strike with Spells by 7.0%.",
+      { "^Equip: Improves your chance to get a Critical Strike with Spells by " .. NUMBER .. "%%%.$", "CritRating" })
+    AddRaw("Equip: Increases the spell critical chance of all party members within 30 yards by 7%.",
+      { "^Equip: Increases the spell critical chance of all party members within %d+ yards? by " .. NUMBER .. "%%%.$", "CritRating" })
+  end
+
+  -- Leg-armor style enchant line. There's no game string for it, so English only.
+  AddRaw("Stamina +7 and Armor +7",
+    { "^Stamina %+" .. NUMBER .. " and Armor %+" .. NUMBER .. "$", "Stamina", 1, PawnMultipleStatsExtract, "Armor", 2, PawnMultipleStatsExtract })
 end

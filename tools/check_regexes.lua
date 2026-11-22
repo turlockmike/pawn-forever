@@ -1,4 +1,4 @@
--- Offline check: runs Pawn's tooltip regex table (optionally plus PawnForever/Parsing.lua) over ~32k real
+-- Offline check: runs Pawn's tooltip regex table (optionally plus Pawn_Forever/Parsing.lua) over ~33k real
 -- WoW Forever tooltips taken from GearQuest Forever's audit data, and lists the stat lines nothing matches.
 --
 --   luajit tools/check_regexes.lua            -- Pawn + Pawn Forever
@@ -37,7 +37,7 @@ end
 local PF = {}
 if not stock then
   dofile("tools/fixtures/globals_enUS.lua")
-  assert(loadfile("PawnForever/Parsing.lua"))("PawnForever", PF)
+  assert(loadfile("Pawn_Forever/Parsing.lua"))("Pawn_Forever", PF)
   io.stderr:write(("Pawn Forever added %d patterns\n"):format(#PF.AddedPatterns))
 end
 

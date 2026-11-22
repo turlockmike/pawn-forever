@@ -1,36 +1,41 @@
 # Pawn Forever
 
-An add-on for [Pawn](https://www.curseforge.com/wow/addons/pawn) on **WoW Forever**. It needs Pawn 2.14.2 or newer and does two things:
+An add-on for [Pawn](https://www.curseforge.com/wow/addons/pawn) on **WoW Forever**. It needs Pawn 2.14.4 or newer (tested with Pawn 2.14.8) and does two things:
 
-1. **Reads the tooltip lines Pawn misses on Forever.** Pawn 2.14.2 scores these as 0:
-   - `Restores +4 mana per 5 sec.` (910 Forever items)
-   - `+24 Block Value` and `+36 Ranged Attack Power` (the plain wording without "Equip:")
-   - `Equip: +2 Weapon Damage.` on armor, which Pawn reads but no scale values (counted as weapon DPS)
-   - Zone-bonus lines such as `... by up to 8. This effect is tripled in Forest and Grassland areas.`, `Equip: +14 Attack Power. This effect is tripled in ...` or `Restores an additional 3 Mana per 5 sec in Forest and Grassland areas.` (the base value counts)
+1. **Reads the tooltip lines Pawn misses on Forever.** Pawn 2.14.8 scores these as 0:
+   - `Restores +4 mana per 5 sec.` (944 Forever items)
+   - `+24 Block Value`, `+36 Ranged Attack Power`, and `+50 Armor Penetration` (the plain wording without "Equip:")
+   - `Equip: +2 Weapon Damage.` on armor, which Pawn reads but no scale values, and elemental damage added to melee/weapon attacks (`Equip: Adds 2 fire damage to your melee attacks.`) — counted as weapon DPS (0.33 DPS per point)
+   - Zone-bonus lines such as `... by up to 8. This effect is tripled in Forest and Grassland areas.`, `Equip: +14 Attack Power. This effect is tripled in ...`, `Restores an additional 3 Mana per 5 sec in Forest and Grassland areas.`, all-resistance zone bonuses, and spell-penetration zone bonuses (the base value counts)
+   - Conditional-bonus base stats such as `Equip: +30 Attack Power, doubled against Mechanical units.` and `Equip: Increases spell damage and healing by up to 18. Grants an additional 18 spell damage against Demons.` (the base value counts)
+   - Forever split-crit items (`Equip: Improves your chance to get a Critical Strike with Melee and Ranged attacks by 1.0%.` such as Blackhand's Breadth, and `... with Spells by 1.0%.` such as Eye of the Beast), plus Hunter ranged hit (`Equip: Improves your chance to hit with ranged weapons by 1.0%.`), enabled only for classes that benefit from them
+   - Permanent party-aura `Equip:` stats (Medallion of Faith Hp5 and all four Atiesh party auras)
 
-   Running Pawn's own patterns over 32,336 real Forever tooltips leaves 4,129 lines unread. With Pawn Forever installed, 3,156 remain, and they are procs, "Use:" effects and set names that Pawn doesn't score anyway.
-2. **Adds "Pawn Forever" weights for every spec** of all nine classes, plus Forever's extra builds (Battle Mage, Shockadin, Enhancement Tank). Below level 60 the leveling weights apply. At 60 the scales switch to endgame weights automatically. The weights come from GearQuest Forever, plus a value for expertise (`Reduces chance to be Dodged or Parried`), which GearQuest doesn't weigh.
+   Running Pawn 2.14.8's own patterns over 33,844 real Forever tooltips leaves 4,331 lines unread in `check_regexes.lua`. With Pawn Forever installed, 3,281 remain, and they are procs, "Use:" effects, monster-specific bonuses and set names that Pawn doesn't score anyway.
+2. **Adds "Pawn Forever" weights for every spec** of all nine classes, plus Forever's extra builds (Battle Mage, Shockadin, Enhancement Tank). Below level 60 the leveling weights apply. At 60 the scales switch to endgame weights automatically. The weights come from GearQuest Forever, plus a value for expertise (`Reduces chance to be Dodged or Parried`), which GearQuest doesn't weigh across all classes.
 
-Versions before 1.1.0 also fixed Pawn's hover lag on Forever. Pawn 2.14.2 fixed that itself, so the workaround was removed.
+Versions before 1.1.0 also fixed Pawn's hover lag on Forever. Pawn 2.14.2 fixed that itself, so the workaround was removed. Pawn 2.14.3+ natively reads Forever's combined Haste and non-English bonus armor, and Pawn 2.14.4+ allows 1H Axes for Rogues on Forever (inherited automatically).
 
 ## Languages
-The new tooltip patterns are built from the game's own localized tooltip strings (`TOOLTIP_ITEM_STAT_*`, `ITEM_MOD_*`), so they work on every client language Pawn supports. Each pattern is only added if Pawn doesn't already read that line, so the fixes switch themselves off as Pawn catches up. `/pff patterns` lists the patterns your client uses. Only the English client has been tested in game.
+The core tooltip patterns are built from the game's own localized tooltip strings (`TOOLTIP_ITEM_STAT_*`, `ITEM_MOD_*`), so they work on every client language Pawn supports. Each pattern is only added if Pawn doesn't already read that line, so the fixes switch themselves off as Pawn catches up. `/pff patterns` lists the patterns your client uses. Only the English client has been tested in game.
 
 ## Install
-Get it from [CurseForge](https://www.curseforge.com/projects/1792442) or the [GitHub releases](https://github.com/turlockmike/pawn-forever/releases), or copy the `PawnForever` folder into `World of Warcraft\_forever_\Interface\AddOns\`. Pawn is a required dependency: the CurseForge app installs it for you, and without it the game lists Pawn Forever as "Dependency missing" and doesn't load it. Then restart the game or log out to character select.
+Get it from [CurseForge](https://www.curseforge.com/projects/1792442) or the [GitHub releases](https://github.com/turlockmike/pawn-forever/releases), or copy the `Pawn_Forever` folder into `World of Warcraft\_forever_\Interface\AddOns\`. Pawn is a required dependency: the CurseForge app installs it for you, and without it the game lists Pawn Forever as "Dependency missing" and doesn't load it. Then restart the game or log out to character select.
+
+> **Upgrading from 1.2.0 or earlier:** Version 1.3.0 renamed the folder from `PawnForever` to `Pawn_Forever` to avoid colliding with Direcktive's unrelated standalone add-on (*"PawnForever - Alternative to Pawn"*). The CurseForge app switches folders automatically; if installing manually, delete the old `PawnForever` folder. Your existing Pawn scale visibility choices are preserved.
 
 The first time each character logs in, Pawn Forever shows its own scale in place of every Pawn stock scale you had visible for your class. After that it never changes which scales are visible.
 
 ## Commands
 - `/pff forever` uses the Pawn Forever scales for your class.
 - `/pff stock` goes back to Pawn's stock scales.
-- `/pff diag` lists the tooltip lines Pawn still can't read on your equipped and bag gear. The full list is saved to `PawnForeverDB.diag` on `/reload`.
+- `/pff diag` lists the tooltip lines Pawn still can't read on your equipped and bag gear. The full list is saved to `Pawn_ForeverDB.diag` on `/reload`.
 - `/pff patterns` lists the extra tooltip patterns active on your client.
 
 ## The weights
-`PawnForever/Weights.lua` is generated by `tools/generate_weights.lua`.
+`Pawn_Forever/Weights.lua` is generated by `tools/generate_weights.lua`.
 
-- **Every spec** uses the per-spec Forever weight tables shipped with [GearQuest Forever](https://www.curseforge.com/projects/1698950) by Henrik8210, which score per point of rating. Pawn reads Forever's crit, hit, dodge and parry as percentages, so the generator converts them using the ratings printed on real Forever tooltips: crit 14, hit 10, dodge 12 and parry 15 per 1%. Haste (10) and block (5) are estimates, because no Forever item in that data has them.
+- **Every spec** uses the per-spec Forever weight tables shipped with [GearQuest Forever](https://www.curseforge.com/projects/1698950) by Henrik8210, which score per point of rating. Pawn reads Forever's crit, hit, haste, dodge, parry and block as percentages, so the generator converts them using the ratings printed on real Forever tooltips: crit 14, hit 10, dodge 12 and parry 15 per 1%, with haste (10) and block (5) estimated.
 - **Leveling** values multiply stamina and health ×3, and armor, Intellect, Spirit, Mp5 and mana ×2. These are GearQuest's leveling multipliers. Level 60 uses the base values.
 
 A damage-and-healing line counts as both SpellDamage and Healing, so healing scales value it fully and caster DPS scales value its damage part.
@@ -40,8 +45,9 @@ To change weights, edit `tools/generate_weights.lua` and run it from the repo ro
     luajit tools/generate_weights.lua "<AddOns>/GearQuestForever/_generated/ScoringWeights.generated.lua"
 
 ## Development
-- `luajit tools/check_regexes.lua` runs Pawn's tooltip patterns plus Pawn Forever's over GearQuest Forever's 32k tooltip audit and lists the stat lines nobody reads. Add `--stock` to see Pawn alone. It needs Pawn and GearQuest Forever installed. The `ADDONS` environment variable points it at your AddOns folder.
-- `luajit tools/test_parsing.lua` checks how Pawn alone and Pawn + Pawn Forever read real Forever tooltip lines (mana per 5, zone bonuses). It needs Pawn installed (or `ADDONS` pointing at it).
+- `luajit tools/check_regexes.lua` runs Pawn's tooltip patterns plus Pawn Forever's over GearQuest Forever's 33k tooltip audit and lists the stat lines nobody reads. Add `--stock` to see Pawn alone. It needs Pawn and GearQuest Forever installed. The `ADDONS` environment variable points it at your AddOns folder.
+- `luajit tools/test_parsing.lua` checks how Pawn alone and Pawn + Pawn Forever read real Forever tooltip lines (mana per 5, zone bonuses, split crit, elemental melee damage, party auras, class gating). It needs Pawn installed (or `ADDONS` pointing at it).
+- `luajit tools/test_scales.lua` checks scale registration, class templates (including Rogue 1H axes), level-60 switching, upgrade migration and `/pff` commands against Pawn's `ScaleTemplates.lua`.
 - `tools/fixtures/globals_enUS.lua` holds the English game strings the patterns are built from, dumped from the Forever client.
 - `tools/wowrun.ps1 -Code 'return PawnVersion'` runs Lua inside the running game and prints the result, without typing in chat. It needs the dev add-on `tools/WowBridge` copied into `Interface\AddOns` (Windows).
 - `tools/wowcmd.ps1 -Cmd "/reload" -Shot shot.png` types a slash command into the running WoW window and screenshots it (Windows).
@@ -50,10 +56,10 @@ To change weights, edit `tools/generate_weights.lua` and run it from the repo ro
 1. Add a `## x.y.z (date)` section at the top of `CHANGELOG.md` and commit.
 2. Tag and push: `git tag vx.y.z && git push origin vx.y.z`.
 
-`.github/workflows/release.yml` then builds `PawnForever-vx.y.z.zip`, which contains the `PawnForever` folder with the version stamped into the .toc. It creates a GitHub release using that changelog section. It also uploads to CurseForge once the repo has the `CF_API_TOKEN` secret and the `CF_PROJECT_ID` and `CF_GAME_VERSION_IDS` variables. The workflow file explains where to find each one.
+`.github/workflows/release.yml` then builds `Pawn_Forever-vx.y.z.zip`, which contains the `Pawn_Forever` folder with the version stamped into the .toc. It creates a GitHub release using that changelog section. It also uploads to CurseForge once the repo has the `CF_API_TOKEN` secret and the `CF_PROJECT_ID` and `CF_GAME_VERSION_IDS` variables. The workflow file explains where to find each one.
 
 ## Reported upstream
-- Pawn's parsing gaps above (reported to Vger). The hover lag, the healing-only lines and the Fire mage `FireSpellDamage=95` typo were fixed in Pawn 2.14.2.
+- Pawn's parsing gaps above (reported to Vger). The hover lag, the healing-only lines and the Fire mage `FireSpellDamage=95` typo were fixed in Pawn 2.14.2; combined Haste and non-English bonus armor were added in 2.14.3; Rogue 1H axes were fixed in 2.14.4.
 
 ## License
 MIT. Pawn is by Vger (vgermods.com). Pawn Forever only calls Pawn's public add-on functions and contains none of Pawn's code.

@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: Pawn Forever
+## Notes: Pawn add-on for WoW Forever: reads the Forever tooltip lines Pawn misses (mana per 5, zone bonuses, block value, ranged AP, crit, elemental melee damage, party auras) and adds Pawn Forever weights for every spec.
+## Author: turlockmike
+## Version: 1.3.0
+## Dependencies: Pawn
+## SavedVariables: Pawn_ForeverDB
+## IconTexture: Interface\AddOns\Pawn_Forever\Icon.tga
+## Category: Equipment
+## X-Website: https://github.com/turlockmike/pawn-forever
+## X-License: MIT
+## X-Curse-Project-ID: 1792442
+
+Parsing.lua
+Weights.lua
+Scales.lua
+Commands.lua

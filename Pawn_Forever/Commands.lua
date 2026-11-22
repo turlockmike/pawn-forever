@@ -1,4 +1,4 @@
--- /pff (or /pawnforever) commands.
+-- /pff (or /pawn_forever) commands.
 
 local _, PF = ...
 
@@ -41,7 +41,7 @@ local function Diag()
       end
     end
   end
-  PawnForeverDB.diag = { time = date("%Y-%m-%d %H:%M:%S"), player = UnitName("player"), level = UnitLevel("player"), locale = GetLocale(), items = out }
+  Pawn_ForeverDB.diag = { time = date("%Y-%m-%d %H:%M:%S"), player = UnitName("player"), level = UnitLevel("player"), locale = GetLocale(), items = out }
   local n = 0
   for _, r in ipairs(out) do
     for _, u in ipairs(r.unparsed) do
@@ -49,21 +49,21 @@ local function Diag()
       if n <= 10 then print("  " .. r.link .. ": " .. u) end
     end
   end
-  print(("|cffff7c0aPawn Forever:|r scanned %d items, %d lines Pawn doesn't read (full list saved to PawnForeverDB.diag on /reload)."):format(#out, n))
+  print(("|cffff7c0aPawn Forever:|r scanned %d items, %d lines Pawn doesn't read (full list saved to Pawn_ForeverDB.diag on /reload)."):format(#out, n))
 end
 
 local function Patterns()
   print(("|cffff7c0aPawn Forever:|r %d extra tooltip patterns active (%s client):"):format(#PF.AddedPatterns, GetLocale()))
   for _, p in ipairs(PF.AddedPatterns) do print("  " .. p.sample) end
-  PawnForeverDB.patterns = PF.AddedPatterns
+  Pawn_ForeverDB.patterns = PF.AddedPatterns
 end
 
-SLASH_PAWNFOREVER1 = "/pawnforever"
-SLASH_PAWNFOREVER2 = "/pff"
-SlashCmdList.PAWNFOREVER = function(msg)
+SLASH_PAWN_FOREVER1 = "/pff"
+SLASH_PAWN_FOREVER2 = "/pawn_forever"
+SlashCmdList.PAWN_FOREVER = function(msg)
   msg = strlower(strtrim(msg or ""))
   if msg == "diag" then Diag()
-  elseif msg == "cleardiag" then PawnForeverDB.diag = nil; print("Pawn Forever: diag cleared")
+  elseif msg == "cleardiag" then Pawn_ForeverDB.diag = nil; print("Pawn Forever: diag cleared")
   elseif msg == "patterns" then Patterns()
   elseif msg == "forever" or msg == "show" then PF.UseScales(true); print("Pawn Forever: showing Pawn Forever scales for your class.")
   elseif msg == "stock" then PF.UseScales(false); print("Pawn Forever: showing Pawn's stock scales for your class.")

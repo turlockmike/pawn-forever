@@ -100,6 +100,12 @@ for i = 2, #versions do
     fail(("CHANGELOG.md is not newest-first (%s appears after %s)"):format(versions[i].str, versions[i - 1].str))
   end
 end
+-- CurseForge converts Markdown to HTML on upload and swallows unescaped <tag> placeholders outside backticks.
+local strippedChangelog = changelog:gsub("`[^`]*`", "")
+local rawTag = strippedChangelog:match("<[A-Za-z][%w_-]*>")
+if rawTag then
+  fail("CHANGELOG.md contains unescaped HTML-like tag " .. rawTag .. " outside backticks (CurseForge strips it)")
+end
 
 -- 5. Release workflow must use --form-string for CurseForge JSON metadata (curl -F truncates at semicolons).
 local workflow = readAll(".github/workflows/release.yml")

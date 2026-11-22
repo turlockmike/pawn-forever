@@ -33,7 +33,7 @@
 - Pawn is now marked as a required dependency on CurseForge, so the CurseForge app installs it automatically.
 
 ## 1.0.2 (2026-11-08)
-- Scales are named "<spec> Forever" (Balance Forever, Resto Forever, Combat Forever, ...) so they're easy to tell apart from Pawn's stock scales on tooltips.
+- Scales are named `<spec> Forever` (Balance Forever, Resto Forever, Combat Forever, ...) so they're easy to tell apart from Pawn's stock scales on tooltips.
 
 ## 1.0.1 (2026-11-08)
 - First CurseForge release (project 1792442). Releases now upload to CurseForge automatically.

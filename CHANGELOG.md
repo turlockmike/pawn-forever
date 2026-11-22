@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 (2026-11-21)
+- Fixed CurseForge release upload workflow (`--form-string` for JSON metadata so semicolons in release notes never break uploads) and added automated packaging validation (`tools/check_packaging.lua`).
+- Includes all 1.3.0 changes (folder rename to `Pawn_Forever`, new icon, Pawn 2.14.8 reconciliation, expanded Forever stat parsing, and GearQuest Forever 1.3.1 weights) for CurseForge users.
+
 ## 1.3.0 (2026-11-21)
 - **Renamed installation folder to `Pawn_Forever`** (and saved variables to `Pawn_ForeverDB`) to eliminate the CurseForge folder collision with Direcktive's unrelated standalone addon ("PawnForever - Alternative to Pawn"). Existing Pawn users keep their scale visibility settings automatically; if installing manually, delete the old `PawnForever` folder.
 - Updated the project logo and added an AddOn list icon (`Icon.tga`) with `Equipment` category metadata so Pawn Forever nests cleanly under Pawn without the default `?` icon.

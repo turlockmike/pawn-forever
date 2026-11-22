@@ -23,22 +23,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build zip
+      - name: Build and validate zip
         run: |
           VERSION="${TAG#v}"
           sed -i "s/^## Version: .*/## Version: ${VERSION}/" Pawn_Forever/Pawn_Forever.toc
           grep -q "^## Version: ${VERSION}" Pawn_Forever/Pawn_Forever.toc
+          # Validate .toc, Lua 5.1 syntax, Icon.tga header, SavedVariables, CHANGELOG, and workflow flags before publishing.
+          command -v lua5.1 >/dev/null 2>&1 || (sudo apt-get update -qq && sudo apt-get install -y -qq lua5.1)
+          lua5.1 tools/check_packaging.lua "$VERSION"
           cp LICENSE Pawn_Forever/LICENSE.txt
           zip -r "Pawn_Forever-${TAG}.zip" Pawn_Forever
-          # Release notes: the CHANGELOG.md section for this version (falls back to the tag name).
+          # Release notes: the CHANGELOG.md section for this version (must be non-empty).
           awk -v v="$VERSION" '$0 ~ "^## "v"( |$)" {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
-          [ -s notes.md ] || echo "Pawn Forever ${TAG}" > notes.md
+          [ -s notes.md ] || { echo "Missing CHANGELOG.md section for ${VERSION}" >&2; exit 1; }
           cat notes.md
+          # Pre-validate CurseForge JSON metadata before creating the GitHub release so a bad payload fails early.
+          if [ -n "$CF_GAME_VERSION_IDS" ]; then
+            jq -n --rawfile notes notes.md --arg name "Pawn Forever ${TAG}" --arg ids "$CF_GAME_VERSION_IDS" \
+              '{changelog: $notes, changelogType: "markdown", releaseType: "release", displayName: $name,
+                gameVersions: ($ids | split(",") | map(gsub(" "; "") | tonumber)),
+                relations: {projects: [{slug: "pawn", type: "requiredDependency"}]}}' > metadata.json
+            jq -e . metadata.json >/dev/null
+          fi
+        env:
+          CF_GAME_VERSION_IDS: ${{ vars.CF_GAME_VERSION_IDS }}
 
       - name: GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$TAG" "Pawn_Forever-${TAG}.zip" --title "Pawn Forever ${TAG}" --notes-file notes.md
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "Pawn_Forever-${TAG}.zip" --clobber
+          else
+            gh release create "$TAG" "Pawn_Forever-${TAG}.zip" --title "Pawn Forever ${TAG}" --notes-file notes.md
+          fi
 
       - name: CurseForge upload
         env:
@@ -50,12 +68,10 @@ jobs:
             echo "CurseForge settings not configured; skipping upload."
             exit 0
           fi
-          METADATA=$(jq -n --rawfile notes notes.md --arg name "Pawn Forever ${TAG}" --arg ids "$CF_GAME_VERSION_IDS" \
-            '{changelog: $notes, changelogType: "markdown", releaseType: "release", displayName: $name,
-              gameVersions: ($ids | split(",") | map(gsub(" "; "") | tonumber)),
-              relations: {projects: [{slug: "pawn", type: "requiredDependency"}]}}')
+          # Use --form-string (NOT -F): curl -F parses semicolons in changelog JSON as multipart directives.
+          METADATA=$(cat metadata.json)
           curl --fail-with-body -sS \
             -H "X-Api-Token: ${CF_API_TOKEN}" \
-            -F "metadata=${METADATA}" \
+            --form-string "metadata=${METADATA}" \
             -F "file=@Pawn_Forever-${TAG}.zip" \
             "https://wow.curseforge.com/api/projects/${CF_PROJECT_ID}/upload-file"

@@ -17,6 +17,7 @@ Run from the repo root:
 - **Folder vs. Pawn provider name:** The addon folder and saved variables are `Pawn_Forever` / `Pawn_ForeverDB` (distinct from Direcktive's unrelated `PawnForever` addon), while `PROVIDER = "PawnForever"` in `Pawn_Forever/Scales.lua` stays unchanged so existing users keep their Pawn scale visibility inside `PawnCommon.Scales`.
 - **Self-disabling patterns:** Every pattern added in `Pawn_Forever/Parsing.lua` must check `not PawnUnderstands(sample)` so it turns off automatically when Pawn adds support upstream.
 - **Icon format:** `Pawn_Forever/Icon.tga` must be a power-of-two (`64x64`) 24/32-bit TGA referenced by `## IconTexture:` in `Pawn_Forever/Pawn_Forever.toc` so WoW doesn't display the default red `?`.
+- **Changelog format:** Keep `CHANGELOG.md` in reverse-chronological order (newest `## x.y.z (YYYY-MM-DD)` section at the top). CurseForge's Changelog tab only displays the latest file's changelog, so `release.yml` sends the entire versioned `CHANGELOG.md` to CurseForge (stripping `# Changelog`) and only the latest section to GitHub Releases.
 
 ## Updating Weights
 Weights are generated from GearQuest Forever's `ScoringWeights.generated.lua`:

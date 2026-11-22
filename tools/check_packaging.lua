@@ -84,12 +84,21 @@ if imgType ~= 2 and imgType ~= 10 then fail("icon TGA must be true-color (type 2
 if bpp ~= 24 and bpp ~= 32 then fail("icon TGA must be 24-bit or 32-bit, got " .. bpp) end
 if not isPow2(w) or not isPow2(h) then fail(("icon TGA dimensions must be power-of-two (got %dx%d)"):format(w, h)) end
 
--- 4. CHANGELOG.md must have a section for this version.
+-- 4. CHANGELOG.md must list versions newest-first and match the .toc version at the top.
 local changelog = readAll("CHANGELOG.md")
 if not changelog then fail("missing CHANGELOG.md") end
-local topVer = changelog:match("##%s+(%d+%.%d+%.%d+)")
-if topVer ~= version then
-  fail(("top CHANGELOG.md version (%s) does not match .toc version (%s)"):format(tostring(topVer), version))
+local versions = {}
+for maj, min, pat in changelog:gmatch("##%s+(%d+)%.(%d+)%.(%d+)") do
+  versions[#versions + 1] = { str = maj .. "." .. min .. "." .. pat, n = tonumber(maj) * 1000000 + tonumber(min) * 1000 + tonumber(pat) }
+end
+if #versions == 0 or versions[1].str ~= version then
+  fail(("top CHANGELOG.md version (%s) does not match .toc version (%s)"):format(
+    versions[1] and versions[1].str or "none", version))
+end
+for i = 2, #versions do
+  if versions[i].n >= versions[i - 1].n then
+    fail(("CHANGELOG.md is not newest-first (%s appears after %s)"):format(versions[i].str, versions[i - 1].str))
+  end
 end
 
 -- 5. Release workflow must use --form-string for CurseForge JSON metadata (curl -F truncates at semicolons).
